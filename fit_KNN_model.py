@@ -26,12 +26,15 @@ k = 100
 
 #############
 
+if os.path.isdir('./models') == False:
+    print(f'Creating ./models')
+    os.mkdir('./models')    
 
 
 print('Importing data...')
 
 
-joblib_save_name = '%s_KNNClassification_model.k=%s.joblib' %(spectrograph, k)
+joblib_save_name = './models/%s_KNNClassification_model.k=%s.joblib' %(spectrograph, k)
 pca_folder = './PCA_ready/'
 X = np.loadtxt(pca_folder + 'PCAReady.%s.txt' %spectrograph )
 y = np.loadtxt(pca_folder + 'classlist.%s.txt' %spectrograph, dtype='str')

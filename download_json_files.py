@@ -27,8 +27,12 @@ if os.path.isdir(json_folder) == False:
     
         
 for sn in sn_types:
-    print(f'Downloading {sn}.json')
-    url = f'https://sne.space/sne/{sn}.json'
-    file_name = f'{json_folder}/{sn}.json'
-
-    download(url, file_name)
+    fname = f'{json_folder}/{sn}.json'
+    
+    if not os.path.isfile(fname):
+        print(f'Downloading {sn}.json')
+        url = f'https://sne.space/sne/{sn}.json'
+        download(url, fname)
+        
+    else:
+        print(f'{fname} already exists, skipping.')
