@@ -7,6 +7,8 @@ The basic setup instructions are as follows:
 
 1) Clone the repository into a folder of your choice then open a terminal window and activate a python environment with sklearn
 
+1a) you may need to pip install requests
+
 2) Run the following scripts in order
 
 download_json_files.py
