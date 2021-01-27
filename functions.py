@@ -341,37 +341,63 @@ def BinSpec(x=[],y=[],wave_bin=5):
     return x,y
 
 
+#def split(string_list = [], z = False):
+#    
+#    types, sne, redshifts , epochs, full = [], [],[],[],[]
+#    for string in string_list:
+#        s = string.split('_')
+#        
+#        
+#        redshift, typ, sn, epoch, _ = s
+#        
+#        fname = f'{typ}_{sn}_{epoch}_{_}'
+#        
+#        if z:
+#            
+#            if ( z - 0.003) < redshift < (z + 0.003):
+#                
+#                #typ, sn, epoch1, epoch2, _ = s[1].split('.')
+#                types.append(typ)
+#                sne.append(sn)
+#                redshifts.append(float(redshift))
+#                epochs.append( float(epoch))
+#                full.append(fname)
+#        
+#        else:
+#            #typ, sn, epoch1, epoch2, *_ = s[1].split('.')
+#            types.append(typ)
+#            sne.append(sn)
+#            redshifts.append(float(redshift))
+#            epochs.append( float(epoch))
+#            full.append(fname)
+#        
+#    return list(zip(types,sne,redshifts,epochs, full))    
+
+
+
 def split(string_list = [], z = False):
     
     types, sne, redshifts , epochs, full = [], [],[],[],[]
     for string in string_list:
         s = string.split('_')
-        
-        
+             
         redshift, typ, sn, epoch, _ = s
         
         fname = f'{typ}_{sn}_{epoch}_{_}'
         
-        if z:
-            
-            if ( z - 0.003) < redshift < (z + 0.003):
-                
-                #typ, sn, epoch1, epoch2, _ = s[1].split('.')
-                types.append(typ)
-                sne.append(sn)
-                redshifts.append(float(redshift))
-                epochs.append( float(epoch))
-                full.append(fname)
+        types.append(typ)
+        sne.append(sn)
+        redshifts.append(float(redshift))
+        epochs.append( float(epoch))
+        full.append(fname)
+    
+    results = list(zip(types,sne,redshifts,epochs, full))
+    
+    if z:
+        redshift_sorted_idxs = np.argsort(abs(np.array(redshifts) - z))
+        results = [results[idx] for idx in redshift_sorted_idxs]
         
-        else:
-            #typ, sn, epoch1, epoch2, *_ = s[1].split('.')
-            types.append(typ)
-            sne.append(sn)
-            redshifts.append(float(redshift))
-            epochs.append( float(epoch))
-            full.append(fname)
-        
-    return list(zip(types,sne,redshifts,epochs, full))    
+    return    results
         
         
 def get_classification(spectrum, clf):
