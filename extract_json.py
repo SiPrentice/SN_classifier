@@ -40,6 +40,7 @@ colors = {'r':'red', 'R':'red','I':'yellow','i':'yellow'}
 label = {'r':'r', 'R':'Rb','I':'Ib','i':'i'}
 master_list =[]
 for f in files:
+    print(f'Processing{f}')
     name,data = openJSON(f)
     
     # get the SNe class
@@ -56,7 +57,7 @@ for f in files:
     
     sn_type = sn_types.get(name, 'UNK')
 
-    print(name)
+    #print(name)
 
     mjd, m = phot(data = data, bands=['R','r','rp'])
     
@@ -90,7 +91,7 @@ for f in files:
             
             # account for NaNs
             if str(min(flux))[0] not in '-0123456789':
-                print('Correcting for NaN',str(min(flux))[0])
+                #print('Correcting for NaN',str(min(flux))[0])
                 w1,f1=[],[]
                 for j in range(len(flux)):
                     if str(flux[j])[0] in '-0123456789':
@@ -118,7 +119,7 @@ for f in files:
                             
                 if (float(specmjd) - tmax) / (1. + z) < 350:
                     savename=('%s_%s_%.2f_.txt'%(sn_type, name, spec_time))
-                    print(savename)
+                    #print(savename)
                                 
                     spec_to_save = list(zip(wavelength,flux))
                                 
@@ -138,12 +139,12 @@ for f in files:
                                 #   z=z
                                 #   )
                     master_list.append([name, z, specmjd, spec_time, savename])
-                else:
-                    print('Rejecting %s min %.1f max %.1f'%(specmjd,min(wavelength/(1+z)),max(wavelength/(1+z))))
+#                else:
+#                    print('Rejecting %s min %.1f max %.1f'%(specmjd,min(wavelength/(1+z)),max(wavelength/(1+z))))
 
             
-    else:
-        print('LC length <1')
+#    else:
+#        print('LC length <1')
         
         
 np.savetxt(tsv_save + '/spectra.'+label[band_to_use]+'.tsv', master_list, fmt="%s", delimiter = '\t', header = 'SN, z, obs-mjd, [t-t(rmax)]/z, filename')
