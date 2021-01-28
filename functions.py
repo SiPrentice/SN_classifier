@@ -183,7 +183,7 @@ def estmag(lctime =[], lcmag=[], specmjd=0, k=2, s=5):
 
 
 def ProcessSpectra(x=[],y=[],wave_bins=8, 
-                   target_wavelength_range = target_wavelength_range, smoothed = True, order = 2):
+                   target_wavelength_range = target_wavelength_range, smoothed = True, order = 3):
     y=y / max(y)
 
     dx = x[1]-x[0]    
