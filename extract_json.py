@@ -107,7 +107,7 @@ for f in files:
                             
                 # Once the redshift is accounted for and the spectrum in the
                 # rest frame, we don't need anything outside of z of 0.1
-                lowcut = np.argmin(abs( (wavelength / (1++z)) - (target_wavelength_range[0] / (1. + (max(z_range) +0.01 )) ) ) )
+                lowcut = np.argmin(abs( (wavelength / (1+z)) - (target_wavelength_range[0] / (1. + (max(z_range) +0.01 )) ) ) )
                 hicut = np.argmin(abs( (wavelength / (1+z)) - (target_wavelength_range[1] + 50)) )
                             
                 wavelength = wavelength[lowcut:hicut]
@@ -120,12 +120,15 @@ for f in files:
                 if (float(specmjd) - tmax) / (1. + z) < 350:
                     savename=('%s_%s_%.2f_.txt'%(sn_type, name, spec_time))
                     #print(savename)
+                    
+                    wavelength = wavelength / (1 + z)
                                 
                     spec_to_save = list(zip(wavelength,flux))
                                 
                     np.savetxt(spec_saveloc + savename, spec_to_save, fmt="%s")
                                 
                     plt.plot(wavelength, flux)
+                    plt.axvline(x = 6563, linestyle = 'dashed')
                     plt.savefig(spec_saveloc + savename +'.pdf')
                     plt.close()
                                 # Note that R is outside the limits of some so we use 'V
