@@ -21,7 +21,7 @@ from functions import spectrograph
 ### USER DEFINED
 
 # set the number k of nearest neighours to find
-k = 100
+k = 1000
 
 
 #############

@@ -422,7 +422,7 @@ def get_classification(spectrum, clf):
     
     # get the list of predicted objects
     predicted = clf.predict(y_shape)
-    print(f'pred from pipeline = {predicted}')
+    #print(f'pred from pipeline = {predicted}')
     
 #     # Try to decompose
 #     for_pca = clf.named_steps.standardscaler.transform(y_shape)
