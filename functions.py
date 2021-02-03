@@ -398,13 +398,47 @@ def split(string_list = [], z = False):
         results = [results[idx] for idx in redshift_sorted_idxs]
         
     return    results
+
+
+def pad(x, y, target_wavelength_range = target_wavelength_range):
+    
+    # get the waveength intervals
+    dx = x[1] - x[0]
+    
+    if min(x) > min(target_wavelength_range):        
+        
+        pad_x = np.arange(min(target_wavelength_range) - dx * 5, min(x), dx  )
+        pad_y = [ np.mean(y[0:30]) for n in range(len(pad_x))]
+        
+        x = np.concatenate((pad_x, x))
+        y = np.concatenate((pad_y, y))
+    
+    
+    if max(x) < max(target_wavelength_range):   
+        pad_x = np.arange(max(x)+ dx, max(target_wavelength_range) + dx * 5, dx  )
+        pad_y = [np.mean(y[-30:-1]) for n in range(len(pad_x))]
+        
+        x = np.concatenate((x, pad_x) )
+        y = np.concatenate((y, pad_y))
+   
+    return x, y 
+
         
         
-def get_classification(spectrum, clf):
+def get_classification(spectrum, clf, pad = False, E = False):
     
     x,y = np.loadtxt(spectrum,unpack=True,usecols=(0,1))
     
-    x =x / 1.0
+    x = x / 1.0
+    
+    # if the spectrum need to be dereddened
+    if E:
+        y = dered(x, y, 3.1, E)
+        
+    # if the spectrum is not quite in the wavelength range    
+    if pad:
+        x, y = pad(x ,y, target_wavelength_range = target_wavelength_range)
+    
     
     #noise = EstimateNoise(x=x,y=y)
     #print('Noise = %.4f' %noise)
