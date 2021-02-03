@@ -400,7 +400,7 @@ def split(string_list = [], z = False):
     return    results
 
 
-def pad(x, y, target_wavelength_range = target_wavelength_range):
+def pad_spectrum(x, y, target_wavelength_range = target_wavelength_range):
     
     # get the waveength intervals
     dx = x[1] - x[0]
@@ -437,7 +437,7 @@ def get_classification(spectrum, clf, pad = False, E = False):
         
     # if the spectrum is not quite in the wavelength range    
     if pad:
-        x, y = pad(x ,y, target_wavelength_range = target_wavelength_range)
+        x, y = pad_spectrum(x ,y, target_wavelength_range = target_wavelength_range)
     
     
     #noise = EstimateNoise(x=x,y=y)
