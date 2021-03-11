@@ -8,6 +8,7 @@ Created on Tue Jan 26 15:35:02 2021
 import numpy as np
 import json
 from scipy.interpolate import UnivariateSpline as spline
+import os
 
 
 
@@ -23,10 +24,13 @@ spectrograph = 'Gr13'
 z_range = np.arange(0, 0.15, 0.002)
 
 # load and set dictionary of object classifications
-rows = np.loadtxt('./SNList.csv', delimiter = ',', dtype = 'str')
 sn_types = {}
-for sn, typ in rows:
-    sn_types[sn] = typ
+if os.path.isfile('./SNList.csv'):
+    rows = np.loadtxt('./SNList.csv', delimiter = ',', dtype = 'str')
+    sn_types = {}
+    for sn, typ in rows:
+        sn_types[sn] = typ
+ 	
     
 
 
