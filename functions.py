@@ -9,6 +9,7 @@ import numpy as np
 import json
 from scipy.interpolate import UnivariateSpline as spline
 import os
+import matplotlib.pyplot as plt
 
 
 
@@ -36,6 +37,41 @@ if os.path.isfile('./SNList.csv'):
 
 ###
 
+def clip_lines(wav,flux, window_width= 340):
+    '''
+    Clips anrrow emission from 1D spectra.
+    
+    >>> CRReject(x,y, window=37)
+    numpy.array(y)
+    '''
+    scale = np.median(flux)
+    x,y = wav, flux/scale
+    
+    # set the window
+    window = int(np.ceil(window_width/(x[1]-x[0])))
+    
+    for j in range(len(x)-window):
+        region = y[j:j+window+1]
+        
+        magic_index = int(j+np.ceil(window/2))
+        
+        if y[magic_index] > (np.median(region) + 2*np.std(region)):
+            
+            y[magic_index] = np.median(region)
+    
+    # deal with the beginning
+    region = y[0:j+window+1]   
+    for idx in range(len(region)):
+        if y[idx] > (np.median(region) + 5*np.std(region)):
+            y[idx] = np.median(region)
+            
+    # deal with the beginning
+    region = y[j-window:]   
+    for idx in range(j-window, len(region)):
+        if y[idx] > (np.median(region) + 5*np.std(region)):
+            y[idx] = np.median(region)        
+            
+    return y*scale 
 
 
 def spike_reduction(y = [], sigma = 3 , window = 10 ):
@@ -429,11 +465,15 @@ def pad_spectrum(x, y, target_wavelength_range = target_wavelength_range):
 
         
         
-def get_classification(spectrum, clf, pad = False, E = False):
+def get_classification(spectrum, clf, pad = False, E = False, clip=False):
     
     x,y = np.loadtxt(spectrum,unpack=True,usecols=(0,1))
     
     x = x / 1.0
+    
+    if clip:
+        y = clip_lines(x, y)
+        print('Clipping input spectrum')
     
     # if the spectrum need to be dereddened
     if E:
@@ -553,3 +593,120 @@ def fit_extinction(w = [], f = [], lam_ref = [], f_ref = [], runs = 50):
     
                        
     return  (final_w, final_f), results
+
+
+### Plotting and stats
+    
+def get_z_stats(sne, zs, types, sorted_scores, get_sn = False, get_type = False, plot = True ):
+    '''
+    Returns the z stats for either a particular supernova as defined by get_sn,
+    or a particular type as defined by get_type.
+    Output is one tuple and two arrays; 
+    
+    [0] = (median, mean, std)
+    [1] = redshift array
+    [2] = weights array for plt.hist weights argument
+    '''
+    
+    
+    # set the empty lists
+    stats = []
+    w = []
+    
+    # set parameters for a supernova or a type
+    if get_sn:
+        sn_matches = [get_sn]
+        list_to_use = sne
+        
+    if get_type:
+        sn_matches = set(sne)
+        list_to_use = types
+     
+    # iterate through the lists to get the redshifts that match the conditions
+    for this_sn in sn_matches:        
+        for idx ,obj in enumerate(list_to_use):
+            
+            if (obj == this_sn) or (obj == get_type):
+                stats.append(zs[idx])
+                w. append(sorted_scores[idx])
+                
+    # normalise the scores to the score in the list. This is for 'weights' in plt.hist            
+    w =  ( w / max(sorted_scores) ) ** 4 
+    
+    # cast as numpy array
+    stats = np.array(stats)
+    w = np.array(w)
+    
+    if plot:
+        plt.hist(stats, weights = w, color = 'k', facecolor = 'tab:green', zorder = 0, rwidth= 0.9, density = True)
+        plt.axvline(x = np.average(stats, weights = w), linestyle = 'dashed' , color = 'k')
+        plt.axvline(x = np.average(stats, weights = w) + np.std(stats), linestyle = 'dotted', color = 'k' )
+        plt.axvline(x = np.average(stats, weights = w) - np.std(stats), linestyle = 'dotted', color = 'k' )
+        plt.xlabel('Redshift')
+        plt.ylabel('weighted counts')
+    
+    return (np.median(stats), np.average(stats, weights = w), np.std(stats) ), stats, w
+
+def plot(spectrum, types, sne, zs, epochs, all_specs, sorted_scores, ref_location = './spectra/', 
+         E=False, i=15, scaling=6000, clip=False):
+    print(f'Top {i} matches to {os.path.basename(spectrum)}')
+    
+    x, y = np.loadtxt(spectrum, usecols = (0,1) ,unpack= True )
+    
+    if clip:
+        y = clip_lines(x, y)
+
+    if E:
+        y = dered(x, y, 3.1, E)
+
+    #ref_lam = 6000
+
+    #scale = y[np.argmin(abs(x - ref_lam))]
+    #y = y / scale
+    
+    if scaling == 'normed':
+        m=1/(max(y)-min(y))
+        con=-m*min(y)    
+        y = np.array([m*d+con for d in y])
+    else:  
+        scale = y[np.argmin(abs(x - scaling))]
+        y = y / scale    
+
+    plt.figure(figsize = (15,19))
+    used =[]
+    n = 0
+    for i, spec in enumerate(all_specs):
+        #if i <15:
+        if (sne[i] not in used) and (n < 15):
+            used.append(sne[i])
+        
+            plt.subplot(5,3, n + 1)
+            plt.plot(x, y)
+    
+            x_, y_ = np.loadtxt(ref_location + spec, unpack = True)
+    
+            x_ = x_ * (1 + zs[i])
+    
+            #scale = y_[np.argmin(abs(x_ - ref_lam))]
+            #y_ = y_ / scale
+            
+            if scaling == 'normed':
+                m = 1 / (max(y_) - min(y_))
+                con = -m * min(y_)    
+                y_ = np.array([m*d+con for d in y_])
+            else:  
+                scale = y_[np.argmin(abs(x_ - scaling))]
+                y_ = y_ / scale
+        
+            fit_score = sorted_scores[i] / max(sorted_scores)
+            plt.plot(x_, y_, label = f'{types[i]} {sne[i]} (t = {epochs[i]})\n@ $z=$ {zs[i]}, score = {fit_score:.2f}', alpha = 0.8)
+
+            plt.legend(frameon = False)
+            plt.minorticks_on()
+            # this messes up if i changes
+            if n in  [0, 3, 6, 9, 12]:
+                plt.ylabel('Scaled flux')
+            if n in [14, 13 ,12]:
+                plt.xlabel('Observed wavelength [$\mathrm{\AA}$]')
+        
+            n+=1
