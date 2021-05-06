@@ -62,13 +62,13 @@ def clip_lines(wav,flux, window_width= 340):
     # deal with the beginning
     region = y[:window+1]   
     for idx in range(len(region)):
-        if y[idx] > (np.median(region) + 5*np.std(region)):
+        if y[idx] > (np.median(region) + 2.5*np.std(region)):
             y[idx] = np.median(region)
             
     # deal with the beginning
     region = y[j-window:]   
     for idx in range(j-window, len(region)):
-        if y[idx] > (np.median(region) + 5*np.std(region)):
+        if y[idx] > (np.median(region) + 2.5*np.std(region)):
             y[idx] = np.median(region)        
             
     return y*scale 
